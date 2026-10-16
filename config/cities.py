@@ -1,1 +1,2 @@
-CITIES=["Pune","Mumbai","Delhi","Bengaluru","Hyderabad"]
+CITIES=["Pune","Mumbai","Delhi","Banglore","Hyderabad"]
+

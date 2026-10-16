@@ -3,7 +3,7 @@ import json
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
-from pathlib import Path
+from loguru import logger
 
 
 load_dotenv()
@@ -13,21 +13,47 @@ API_KEY = os.getenv("OPENWEATHER_API_KEY")
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def get_weather(city):
-    """
-    Fetch current weather data for a given city.
-    """
+    
+    
+    if not API_KEY:
+        logger.error("OPENWEATHER_API_KEY is missing from the .env file")
+        return None
 
-    params={
-        "q":city,
-        "appid":API_KEY,
-        "units":"metric"
-    }
+    try:
+        """
+        Fetch current weather data for a given city.
 
-    response=requests.get(BASE_URL,params=params,timeout=30)
+        """
 
-    response.raise_for_status()
 
-    return response.json()
+        params={
+            "q":city,
+            "appid":API_KEY,
+            "units":"metric"
+        }
+
+        response=requests.get(BASE_URL,params=params,timeout=30)
+
+        response.raise_for_status()
+        logger.info(f"Weather data fetched successfully for {city}")
+
+        return response.json()
+    
+    except requests.exceptions.Timeout:
+        logger.error(f"Timeout error while fetching weather data for {city}")
+        return None
+
+    except requests.exceptions.HTTPError as e:
+        logger.error(f"API error while fetching weather data for {city}:- {e}")
+        return None
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Request failed for {city}:{e}")
+        return None
+    
+    except Exception as e:
+        logger.exception(f"Unexpected error for {city}:{e}")
+        return None
 
 def save_raw_data(data,city):
     """
@@ -40,10 +66,17 @@ def save_raw_data(data,city):
 
     filepath = os.path.join("data", "raw", filename)
 
-    with open(filepath, "w") as file:
-        json.dump(data, file, indent=4)
+    try:
+        with open(filepath, "w") as file:
+            json.dump(data, file, indent=4)
 
-    print(f"Raw weather data saved to: {filepath}")
+        logger.success(f"Raw weather data saved to: {filepath}")
+
+    except OSError:
+        logger.exception(f"Failed to save raw weather data for {city}")
+        raise
+
+    
 
 
 
