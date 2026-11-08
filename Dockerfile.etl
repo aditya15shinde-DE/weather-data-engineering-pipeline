@@ -1,0 +1,43 @@
+﻿# Base image
+FROM python:3.14-slim    
+
+# Python runtime settings
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install system dependencies and Microsoft's ODBC Driver 17
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg \
+    unixodbc \
+    unixodbc-dev \
+    libgssapi-krb5-2 \
+    && DEBIAN_VERSION=$(cut -d. -f1 /etc/debian_version) \
+    && curl -fsSLo /tmp/packages-microsoft-prod.deb \
+       "https://packages.microsoft.com/config/debian/${DEBIAN_VERSION}/packages-microsoft-prod.deb" \
+    && dpkg -i /tmp/packages-microsoft-prod.deb \
+    && rm /tmp/packages-microsoft-prod.deb \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends msodbcsql17 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Python dependencies
+COPY requirements.txt .
+
+# Exclude Windows-only dependency
+RUN grep -v -E '^win32_setctime==' requirements.txt > requirements-linux.txt \
+    && pip install --no-cache-dir -r requirements-linux.txt
+
+# Copy ETL application
+COPY config ./config
+COPY src ./src
+COPY main.py .
+
+# Create application directories
+RUN mkdir -p data/raw data/processed data/rejected logs
+
+# Default application command
+CMD ["python", "main.py"]

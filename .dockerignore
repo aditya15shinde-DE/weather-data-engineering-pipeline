@@ -1,0 +1,27 @@
+
+# Environment variables and secrets
+.env
+.env.*
+
+# Python virtual environment
+.venv/
+venv/
+
+# Git history
+.git/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Local data
+data/
+
+# Application logs
+logs/
+
+# Tests - not required in the runtime image
+tests/
+
+# IDE configuration
+.vscode/

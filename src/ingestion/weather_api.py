@@ -13,8 +13,8 @@ API_KEY = os.getenv("OPENWEATHER_API_KEY")
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def get_weather(city):
-    
-    
+
+
     if not API_KEY:
         logger.error("OPENWEATHER_API_KEY is missing from the .env file")
         return None
@@ -38,22 +38,37 @@ def get_weather(city):
         logger.info(f"Weather data fetched successfully for {city}")
 
         return response.json()
-    
+
     except requests.exceptions.Timeout:
         logger.error(f"Timeout error while fetching weather data for {city}")
         return None
 
     except requests.exceptions.HTTPError as e:
-        logger.error(f"API error while fetching weather data for {city}:- {e}")
-        return None
+         status_code = (
+            e.response.status_code
+            if e.response is not None
+            else "unknown"
+        )
+         logger.error(
+            f"API HTTP error for {city}: status={status_code}"
+        )
+
+         return None
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed for {city}:{e}")
+        logger.error(
+            f"Request failed for {city}: "
+            f"{type(e).__name__}"
+        )
         return None
-    
+
     except Exception as e:
-        logger.exception(f"Unexpected error for {city}:{e}")
+        logger.error(
+            f"Unexpected error for {city}: "
+            f"{type(e).__name__}"
+        )
         return None
+
 
 def save_raw_data(data,city):
     """
@@ -76,7 +91,7 @@ def save_raw_data(data,city):
         logger.exception(f"Failed to save raw weather data for {city}")
         raise
 
-    
+
 
 
 

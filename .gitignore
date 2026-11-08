@@ -1,10 +1,29 @@
+# Python virtual environments
 .venv/
+venv/
+env/
+
+# Python cache files
 __pycache__/
-*.pyc
+*.py[cod]
+
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
+
+# Logs
 logs/
+*.log
+
+# Generated weather data
 data/raw/
 data/processed/
 data/rejected/
-.ipynb_checkpoints/
+
+# IDE and editor files
 .vscode/
+.idea/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
